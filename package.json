@@ -1,0 +1,23 @@
+{
+  "name": "meetbrief-ai",
+  "version": "1.0.0",
+  "description": "The Autonomous Meeting Lifecycle Companion — Pre-Meeting Deep Research, Real-Time In-Meeting Transcription, and Post-Meeting Intelligence.",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "lint:frontend": "npm run lint --prefix frontend"
+  },
+  "keywords": [
+    "ai",
+    "meeting-intelligence",
+    "gemini",
+    "claude",
+    "tavily",
+    "transcription",
+    "hackathon",
+    "nextjs",
+    "fastapi"
+  ],
+  "author": "midenotch <midenotch@gmail.com>",
+  "license": "MIT"
+}
