@@ -1,165 +1,214 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MeetBrief AI Companion</title>
-  <link rel="stylesheet" href="sidepanel.css" />
-</head>
-<body>
-  <div id="app">
-
-    <!-- ── Header ─────────────────────────────────────────── -->
-    <header class="header">
-      <div class="header-logo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-        </svg>
-        MeetBrief AI
-      </div>
-      <div id="status-dot" class="status-dot idle" title="Status"></div>
-    </header>
-
-    <!-- ── Login Screen ───────────────────────────────────── -->
-    <section id="screen-login" class="screen">
-      <div class="login-card">
-        <h2>Sign in to MeetBrief</h2>
-        <p class="muted">Use the same account as your MeetBrief web app.</p>
-        <div class="form-group">
-          <label>Email</label>
-          <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <div id="login-error" class="error-msg hidden"></div>
-        <button id="btn-login" class="btn btn-primary btn-full">Sign in</button>
-      </div>
-    </section>
-
-    <!-- ── Main Screen ────────────────────────────────────── -->
-    <section id="screen-main" class="screen hidden">
-
-      <!-- Meeting link row -->
-      <div class="meeting-link-row">
-        <div class="meeting-select-wrap">
-          <select id="meeting-select">
-            <option value="">Link to a meeting…</option>
-          </select>
-          <div id="meeting-hint" class="meeting-hint hidden">Select a meeting to start recording</div>
-        </div>
-        <button id="btn-refresh-meetings" class="btn-icon" title="Refresh meetings">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MeetBrief AI Companion</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── Header ─────────────────────────────────────────── -->
+      <header class="header">
+        <div class="header-logo">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4l3 3" />
           </svg>
-        </button>
-      </div>
-
-      <!-- Platform badge -->
-      <div id="platform-badge" class="platform-badge hidden"></div>
-
-      <!-- Recording controls -->
-      <div class="controls">
-        <button id="btn-record" class="btn btn-record">
-          <span class="rec-dot"></span> Start Recording
-        </button>
-        <div id="recording-timer" class="timer hidden">00:00</div>
-        <div id="mic-error" class="mic-error hidden">
-          <strong>Microphone blocked.</strong> To fix:<br>
-          1. Go to <code>chrome://settings/content/microphone</code><br>
-          2. Find this extension and set it to <em>Allow</em><br>
-          3. Click Start Recording again.
+          MeetBrief AI
         </div>
-        <div id="consent-note" class="consent-note">
-          Recording requires consent from all participants.
+        <div id="status-dot" class="status-dot idle" title="Status"></div>
+      </header>
+
+      <!-- ── Login Screen ───────────────────────────────────── -->
+      <section id="screen-login" class="screen">
+        <div class="login-card">
+          <h2>Sign in to MeetBrief</h2>
+          <p class="muted">Use the same account as your MeetBrief web app.</p>
+          <div class="form-group">
+            <label>Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+          </div>
+          <div id="login-error" class="error-msg hidden"></div>
+          <button id="btn-login" class="btn btn-primary btn-full">
+            Sign in
+          </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Cleanup status -->
-      <div id="cleanup-status" class="cleanup-status hidden">
-        <div class="spinner-sm"></div>
-        <span>Improving transcript with AI…</span>
-      </div>
-
-      <!-- Live transcript -->
-      <div class="section-header">
-        <span>Live Transcript</span>
-        <span id="segment-count" class="badge">0</span>
-      </div>
-      <div id="transcript-container" class="transcript-box">
-        <p class="empty-state">Start recording to see the live transcript here.</p>
-      </div>
-
-      <!-- Post-meeting button -->
-      <button id="btn-generate" class="btn btn-primary btn-full hidden">
-        ✨ Generate Post-Meeting Intelligence
-      </button>
-
-      <!-- Sign out -->
-      <div class="footer-row">
-        <button id="btn-signout" class="btn-link">Sign out</button>
-        <a id="open-webapp" href="http://localhost:3000/meetings" target="_blank" class="btn-link">
-          Open MeetBrief →
-        </a>
-      </div>
-    </section>
-
-    <!-- ── Post-meeting Screen ────────────────────────────── -->
-    <section id="screen-postmeeting" class="screen hidden">
-      <div class="pm-header">
-        <button id="btn-back" class="btn-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <h3>Post-Meeting Intelligence</h3>
-      </div>
-
-      <div id="pm-loading" class="pm-loading">
-        <div class="spinner"></div>
-        <p>Analysing with Gemini AI…</p>
-      </div>
-
-      <div id="pm-content" class="hidden">
-        <div class="pm-section">
-          <div class="pm-section-title">Summary</div>
-          <div id="pm-summary"></div>
+      <!-- ── Main Screen ────────────────────────────────────── -->
+      <section id="screen-main" class="screen hidden">
+        <!-- Meeting link row -->
+        <div class="meeting-link-row">
+          <div class="meeting-select-wrap">
+            <select id="meeting-select">
+              <option value="">Link to a meeting…</option>
+            </select>
+            <div id="meeting-hint" class="meeting-hint hidden">
+              Select a meeting to start recording
+            </div>
+          </div>
+          <button
+            id="btn-refresh-meetings"
+            class="btn-icon"
+            title="Refresh meetings"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"
+              />
+            </svg>
+          </button>
         </div>
 
-        <div class="pm-section">
-          <div class="pm-section-title">Key Decisions</div>
-          <ul id="pm-decisions" class="pm-list"></ul>
-        </div>
+        <!-- Platform badge -->
+        <div id="platform-badge" class="platform-badge hidden"></div>
 
-        <div class="pm-section">
-          <div class="pm-section-title">Action Items</div>
-          <div id="pm-actions"></div>
-        </div>
-
-        <div class="pm-section">
-          <div class="pm-section-title">Unresolved Questions</div>
-          <ul id="pm-questions" class="pm-list"></ul>
-        </div>
-
-        <div class="pm-section">
-          <div class="pm-section-title">Follow-up Email Draft</div>
-          <div class="email-draft">
-            <div class="email-subject" id="pm-email-subject"></div>
-            <pre id="pm-email-body" class="email-body"></pre>
-            <button id="btn-copy-email" class="btn btn-secondary">Copy Email</button>
+        <!-- Recording controls -->
+        <div class="controls">
+          <button id="btn-record" class="btn btn-record">
+            <span class="rec-dot"></span> Start Recording
+          </button>
+          <div id="recording-timer" class="timer hidden">00:00</div>
+          <div id="mic-error" class="mic-error hidden">
+            <strong>Microphone blocked.</strong> To fix:<br />
+            1. Go to <code>chrome://settings/content/microphone</code><br />
+            2. Find this extension and set it to <em>Allow</em><br />
+            3. Click Start Recording again.
+          </div>
+          <div id="consent-note" class="consent-note">
+            Recording requires consent from all participants.
           </div>
         </div>
 
-        <div class="pm-section">
-          <div class="pm-section-title">Next Steps</div>
-          <ul id="pm-nextsteps" class="pm-list"></ul>
+        <!-- Cleanup status -->
+        <div id="cleanup-status" class="cleanup-status hidden">
+          <div class="spinner-sm"></div>
+          <span>Improving transcript with AI…</span>
         </div>
-      </div>
-    </section>
 
-  </div>
+        <!-- Live transcript -->
+        <div class="section-header">
+          <span>Live Transcript</span>
+          <span id="segment-count" class="badge">0</span>
+        </div>
+        <div id="transcript-container" class="transcript-box">
+          <p class="empty-state">
+            Start recording to see the live transcript here.
+          </p>
+        </div>
 
-  <script src="sidepanel.js"></script>
-</body>
+        <!-- Post-meeting button -->
+        <button id="btn-generate" class="btn btn-primary btn-full hidden">
+          ✨ Generate Post-Meeting Intelligence
+        </button>
+
+        <!-- Sign out -->
+        <div class="footer-row">
+          <button id="btn-signout" class="btn-link">Sign out</button>
+          <a
+            id="open-webapp"
+            href="http://localhost:3000/meetings"
+            target="_blank"
+            class="btn-link"
+          >
+            Open MeetBrief →
+          </a>
+        </div>
+      </section>
+
+      <!-- ── Post-meeting Screen ────────────────────────────── -->
+      <section id="screen-postmeeting" class="screen hidden">
+        <div class="pm-header">
+          <button id="btn-back" class="btn-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <h3>Post-Meeting Intelligence</h3>
+        </div>
+
+        <div id="pm-loading" class="pm-loading">
+          <div class="spinner"></div>
+          <p>Analysing with Gemini AI…</p>
+        </div>
+
+        <div id="pm-content" class="hidden">
+          <div class="pm-section">
+            <div class="pm-section-title">Summary</div>
+            <div id="pm-summary"></div>
+          </div>
+
+          <div class="pm-section">
+            <div class="pm-section-title">Key Decisions</div>
+            <ul id="pm-decisions" class="pm-list"></ul>
+          </div>
+
+          <div class="pm-section">
+            <div class="pm-section-title">Action Items</div>
+            <div id="pm-actions"></div>
+          </div>
+
+          <div class="pm-section">
+            <div class="pm-section-title">Unresolved Questions</div>
+            <ul id="pm-questions" class="pm-list"></ul>
+          </div>
+
+          <div class="pm-section">
+            <div class="pm-section-title">Follow-up Email Draft</div>
+            <div class="email-draft">
+              <div class="email-subject" id="pm-email-subject"></div>
+              <pre id="pm-email-body" class="email-body"></pre>
+              <button id="btn-copy-email" class="btn btn-secondary">
+                Copy Email
+              </button>
+            </div>
+          </div>
+
+          <div class="pm-section">
+            <div class="pm-section-title">Next Steps</div>
+            <ul id="pm-nextsteps" class="pm-list"></ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="sidepanel.js"></script>
+  </body>
 </html>

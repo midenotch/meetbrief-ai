@@ -3,16 +3,19 @@
  * Handles: auth, meeting selection, audio recording, live transcription, post-meeting intelligence.
  */
 
-let API_URL = "http://localhost:8000";
-let SUPABASE_URL = "https://your-project-id.supabase.co";
-let SUPABASE_ANON_KEY = "your-supabase-anon-or-publishable-key";
+let API_URL = window.__MEETBRIEF_CONFIG__.API_URL;
+let SUPABASE_URL = window.__MEETBRIEF_CONFIG__.SUPABASE_URL;
+let SUPABASE_ANON_KEY = window.__MEETBRIEF_CONFIG__.SUPABASE_ANON_KEY;
 
 // Load user-configured endpoints from local storage if available
-chrome.storage.local.get(["apiUrl", "supabaseUrl", "supabaseAnonKey"], (stored) => {
-  if (stored.apiUrl) API_URL = stored.apiUrl;
-  if (stored.supabaseUrl) SUPABASE_URL = stored.supabaseUrl;
-  if (stored.supabaseAnonKey) SUPABASE_ANON_KEY = stored.supabaseAnonKey;
-});
+chrome.storage.local.get(
+  ["apiUrl", "supabaseUrl", "supabaseAnonKey"],
+  (stored) => {
+    if (stored.apiUrl) API_URL = stored.apiUrl;
+    if (stored.supabaseUrl) SUPABASE_URL = stored.supabaseUrl;
+    if (stored.supabaseAnonKey) SUPABASE_ANON_KEY = stored.supabaseAnonKey;
+  },
+);
 
 // ── State ──────────────────────────────────────────────────────
 let accessToken = null;
@@ -47,7 +50,8 @@ async function signIn(email, password) {
     body: JSON.stringify({ email, password }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error_description || data.msg || "Sign in failed");
+  if (!res.ok)
+    throw new Error(data.error_description || data.msg || "Sign in failed");
   return data.access_token;
 }
 
@@ -171,7 +175,11 @@ function appendSegment(text, isFinal, speakerLabel = "You") {
     if (!text.trim()) return;
 
     const elapsed = elapsedSeconds();
-    const seg = { speaker: speakerLabel, text: text.trim(), timestamp: elapsed };
+    const seg = {
+      speaker: speakerLabel,
+      text: text.trim(),
+      timestamp: elapsed,
+    };
     segments.push(seg);
 
     const el = document.createElement("div");
@@ -218,11 +226,7 @@ function hideMeetingError() {
 }
 
 // ── Find meeting tab (active first, then any in window) ───────────
-const MEETING_PATTERNS = [
-  "meet.google.com",
-  "zoom.us",
-  "teams.microsoft.com",
-];
+const MEETING_PATTERNS = ["meet.google.com", "zoom.us", "teams.microsoft.com"];
 
 function isMeetingUrl(url) {
   if (!url) return false;
@@ -231,7 +235,10 @@ function isMeetingUrl(url) {
 
 async function getActiveMeetingTab() {
   // Check active tab first
-  const [active] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [active] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
   if (active && isMeetingUrl(active.url)) return active;
 
   // Fall back: find any meeting tab in this window
@@ -272,14 +279,18 @@ async function startRecording() {
 
   const tab = await getActiveMeetingTab();
   if (!tab) {
-    showMicError("No meeting tab found. Make sure Google Meet, Zoom, or Teams is open in this browser window.");
+    showMicError(
+      "No meeting tab found. Make sure Google Meet, Zoom, or Teams is open in this browser window.",
+    );
     return;
   }
 
   // Inject content script if not already there
   const ready = await ensureContentScript(tab.id);
   if (!ready) {
-    showMicError("Could not connect to the meeting tab. Try reloading the meeting page.");
+    showMicError(
+      "Could not connect to the meeting tab. Try reloading the meeting page.",
+    );
     return;
   }
 
@@ -328,7 +339,9 @@ async function stopRecording() {
     return;
   }
 
-  const rawFullText = segments.map((s) => `[${formatTime(s.timestamp)}] ${s.speaker}: ${s.text}`).join("\n");
+  const rawFullText = segments
+    .map((s) => `[${formatTime(s.timestamp)}] ${s.speaker}: ${s.text}`)
+    .join("\n");
   let finalText = rawFullText;
   let finalSegments = segments;
 
@@ -419,13 +432,16 @@ async function generatePostMeeting() {
   setStatus("processing");
 
   try {
-    const result = await apiFetch(`/api/post-meeting/generate/${selectedMeetingId}`, {
-      method: "POST",
-      body: JSON.stringify({
-        meeting_id: selectedMeetingId,
-        transcript_id: savedTranscriptId,
-      }),
-    });
+    const result = await apiFetch(
+      `/api/post-meeting/generate/${selectedMeetingId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          meeting_id: selectedMeetingId,
+          transcript_id: savedTranscriptId,
+        }),
+      },
+    );
     renderPostMeeting(result.content);
     setStatus("done");
   } catch (e) {
@@ -447,10 +463,14 @@ function renderPostMeeting(content) {
   decisions.innerHTML = "";
   (content.key_decisions || []).forEach((d) => {
     const li = document.createElement("li");
-    li.textContent = typeof d === "string" ? d : `${d.decision}${d.owner ? ` (${d.owner})` : ""}`;
+    li.textContent =
+      typeof d === "string"
+        ? d
+        : `${d.decision}${d.owner ? ` (${d.owner})` : ""}`;
     decisions.appendChild(li);
   });
-  if (!decisions.children.length) decisions.innerHTML = "<li>No clear decisions recorded.</li>";
+  if (!decisions.children.length)
+    decisions.innerHTML = "<li>No clear decisions recorded.</li>";
 
   // Action items
   const actions = $("pm-actions");
@@ -468,7 +488,9 @@ function renderPostMeeting(content) {
     `;
     actions.appendChild(item);
   });
-  if (!actions.children.length) actions.innerHTML = '<p style="color:var(--muted);font-size:12px">No action items captured.</p>';
+  if (!actions.children.length)
+    actions.innerHTML =
+      '<p style="color:var(--muted);font-size:12px">No action items captured.</p>';
 
   // Unresolved questions
   const questions = $("pm-questions");
@@ -478,11 +500,14 @@ function renderPostMeeting(content) {
     li.textContent = typeof q === "string" ? q : q.question;
     questions.appendChild(li);
   });
-  if (!questions.children.length) questions.innerHTML = "<li>No unresolved questions.</li>";
+  if (!questions.children.length)
+    questions.innerHTML = "<li>No unresolved questions.</li>";
 
   // Follow-up email
   const email = content.follow_up_email || {};
-  $("pm-email-subject").textContent = email.subject ? `Subject: ${email.subject}` : "";
+  $("pm-email-subject").textContent = email.subject
+    ? `Subject: ${email.subject}`
+    : "";
   $("pm-email-body").textContent = email.body || "No email draft generated.";
 
   // Next steps
@@ -493,7 +518,8 @@ function renderPostMeeting(content) {
     li.textContent = s;
     nextsteps.appendChild(li);
   });
-  if (!nextsteps.children.length) nextsteps.innerHTML = "<li>No next steps identified.</li>";
+  if (!nextsteps.children.length)
+    nextsteps.innerHTML = "<li>No next steps identified.</li>";
 }
 
 // ── Init ──────────────────────────────────────────────────────────
@@ -517,9 +543,10 @@ async function init() {
       appendSegment(msg.text, msg.isFinal);
     }
     if (msg.type === "RECORDING_ERROR") {
-      const friendly = msg.error === "not-allowed"
-        ? "Microphone blocked by the meeting page. Please allow mic access on the meeting site."
-        : `Recording error: ${msg.error}`;
+      const friendly =
+        msg.error === "not-allowed"
+          ? "Microphone blocked by the meeting page. Please allow mic access on the meeting site."
+          : `Recording error: ${msg.error}`;
       showMicError(friendly);
       stopRecording();
     }
@@ -604,7 +631,9 @@ async function init() {
     const full = `Subject: ${subject}\n\n${body}`;
     navigator.clipboard.writeText(full).then(() => {
       $("btn-copy-email").textContent = "Copied!";
-      setTimeout(() => { $("btn-copy-email").textContent = "Copy Email"; }, 2000);
+      setTimeout(() => {
+        $("btn-copy-email").textContent = "Copy Email";
+      }, 2000);
     });
   });
 }
