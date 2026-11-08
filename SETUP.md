@@ -96,5 +96,5 @@ Add all `NEXT_PUBLIC_*` env vars in the Vercel project settings.
 2. Build command: `pip install -r requirements.txt`
 3. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 4. Add all backend env vars in Render's Environment settings
-5. Update `NEXT_PUBLIC_API_URL` in Vercel to point to your Render URL
+5. Set `NEXT_PUBLIC_API_URL` in Vercel to `https://meetbrief-ai.onrender.com` for Production and Preview deployments. Local development uses `http://localhost:8000` by default.
 6. Update `ALLOWED_ORIGINS` in Render to include your Vercel URL

@@ -16,6 +16,7 @@
     "https://zoom.us/*",
     "https://teams.microsoft.com/*",
     "https://*.teams.microsoft.com/*",
+    "https://meetbrief-ai.onrender.com/*",
     "http://localhost:8000/*"
   ],
   "side_panel": {

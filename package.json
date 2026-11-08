@@ -5,7 +5,8 @@
   "scripts": {
     "dev:frontend": "npm run dev --prefix frontend",
     "build:frontend": "npm run build --prefix frontend",
-    "lint:frontend": "npm run lint --prefix frontend"
+    "lint:frontend": "npm run lint --prefix frontend",
+    "env:extension": "node scripts/sync-extension-env.js"
   },
   "keywords": [
     "ai",

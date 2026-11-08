@@ -1,4 +1,3 @@
-
 const fs = require("fs");
 const path = require("path");
 
@@ -17,7 +16,10 @@ if (fs.existsSync(envPath)) {
     if (match) {
       const key = match[1].trim();
       let val = match[2].trim();
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
         val = val.slice(1, -1);
       }
       env[key] = val;
@@ -25,9 +27,23 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-const apiUrl = env.NEXT_PUBLIC_API_URL || env.API_URL || "http://localhost:8000";
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL || "https://your-project-id.supabase.co";
-const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || "your-supabase-anon-key";
+const defaultApiUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://meetbrief-ai.onrender.com"
+    : "http://localhost:8000";
+const apiUrl =
+  process.env.NEXT_PUBLIC_API_URL ||
+  env.NEXT_PUBLIC_API_URL ||
+  env.API_URL ||
+  defaultApiUrl;
+const supabaseUrl =
+  env.NEXT_PUBLIC_SUPABASE_URL ||
+  env.SUPABASE_URL ||
+  "https://your-project-id.supabase.co";
+const supabaseAnonKey =
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  env.SUPABASE_ANON_KEY ||
+  "your-supabase-anon-key";
 
 const output = `// Auto-generated from .env by scripts/sync-extension-env.js
 // DO NOT commit this file to version control.
@@ -39,7 +55,9 @@ window.__MEETBRIEF_CONFIG__ = {
 `;
 
 fs.writeFileSync(configPath, output, "utf-8");
-console.log(`[MeetBrief AI] Successfully generated extension/config.js from .env`);
+console.log("[MeetBrief AI] Successfully generated extension/config.js from .env");
 console.log(`  API_URL:          ${apiUrl}`);
 console.log(`  SUPABASE_URL:     ${supabaseUrl}`);
-console.log(`  SUPABASE_ANON_KEY: ${supabaseAnonKey ? (supabaseAnonKey.slice(0, 10) + "...") : "none"}`);
+console.log(
+  `  SUPABASE_ANON_KEY: ${supabaseAnonKey ? `${supabaseAnonKey.slice(0, 10)}...` : "none"}`,
+);

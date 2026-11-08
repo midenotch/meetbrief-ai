@@ -7,7 +7,11 @@ import type {
   MeetingWithResearch,
 } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const DEFAULT_API_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://meetbrief-ai.onrender.com"
+    : "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
 
 async function getAuthHeaders(): Promise<HeadersInit> {
   const supabase = createClient();

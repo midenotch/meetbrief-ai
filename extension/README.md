@@ -9,7 +9,7 @@ Open `icons/generate-icons.html` in Chrome and click **Generate & Download Icons
 Save the three downloaded files (`icon16.png`, `icon48.png`, `icon128.png`) into the `icons/` folder.
 
 ### 2. Configure endpoints
-In `sidepanel/sidepanel.js`, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` to match your Supabase project (from your `.env`), or store them in `chrome.storage.local`.
+Set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the repository root `.env`, then run `npm run env:extension` to generate `config.js`. Use `http://localhost:8000` for local development and `https://meetbrief-ai.onrender.com` when preparing the production extension.
 
 ### 3. Load the extension in Chrome
 1. Open Chrome and go to `chrome://extensions`
@@ -34,7 +34,7 @@ Sign in with the same email/password as your MeetBrief web app.
 4. **In the web app**: open the meeting → **Post-Meeting** tab to review the intelligence.
 
 ## Notes
-- The backend must be running at `http://localhost:8000`.
+- The backend endpoint comes from the generated `config.js`: local development uses `http://localhost:8000`, and production uses `https://meetbrief-ai.onrender.com`.
 - Transcription uses the browser's built-in Web Speech API (requires internet, Chrome only).
 - Recording captures your microphone only — tab audio is not captured (browser limitation in Manifest V3 without additional permissions).
 - Always inform all meeting participants that the meeting is being recorded.
