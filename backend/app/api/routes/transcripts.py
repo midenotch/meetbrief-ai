@@ -76,7 +76,10 @@ async def cleanup_transcript(
     from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = genai.Client(
+        api_key=settings.gemini_api_key,
+        http_options=types.HttpOptions(api_version="v1beta"),
+    )
     response = await asyncio.to_thread(
         client.models.generate_content,
         model=settings.gemini_model,
