@@ -43,6 +43,10 @@ async function apiFetch<T>(
     throw new Error(error.detail || `HTTP ${res.status}`);
   }
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return res.json();
 }
 
